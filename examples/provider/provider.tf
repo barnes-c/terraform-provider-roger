@@ -10,4 +10,6 @@ terraform {
 }
 
 provider "roger" {
+  host = "teigicritical-woger-direct.cern.ch"
+  port = 8201
 }
