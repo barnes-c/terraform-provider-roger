@@ -30,7 +30,7 @@ func New(version string) func() provider.Provider {
 
 type rogerProviderModel struct {
 	Host types.String `tfsdk:"host"`
-	Port types.String `tfsdk:"Port"`
+	Port types.String `tfsdk:"port"`
 }
 
 type rogerProvider struct {

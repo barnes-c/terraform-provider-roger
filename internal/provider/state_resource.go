@@ -39,7 +39,7 @@ type stateResource struct {
 }
 
 func (r *stateResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_roger"
+	resp.TypeName = req.ProviderTypeName + "_state"
 }
 
 func (r *stateResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
