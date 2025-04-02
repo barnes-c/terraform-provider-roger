@@ -13,8 +13,6 @@ Interact with roger.
 ## Example Usage
 
 ```terraform
-# Copyright (c) HashiCorp, Inc.
-
 terraform {
   required_providers {
     roger = {

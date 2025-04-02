@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c) Christopher Barnes <christopher@barnes.biz>
 
 package provider
 
