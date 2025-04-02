@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "gitlab.cern.ch/ai-config-team/roger",
+		Address: "github.com/barnes-c/terraform-provider-roger",
 		Debug:   debug,
 	}
 
