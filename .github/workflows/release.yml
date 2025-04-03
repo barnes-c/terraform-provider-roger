@@ -32,6 +32,13 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
+      - name: "Debug: Show GPG secret keys"
+        run: |
+          echo "GNUPGHOME=$GNUPGHOME"
+          gpg --list-secret-keys --keyid-format LONG
+          gpg --fingerprint
+        env:
+          GNUPGHOME: /home/runner/.gnupg
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6.3.0
         with:
