@@ -39,4 +39,5 @@ jobs:
         env:
           # GitHub sets the GITHUB_TOKEN secret automatically.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GNUPGHOME: /home/runner/.gnupg
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
