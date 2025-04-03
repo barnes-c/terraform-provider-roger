@@ -37,8 +37,8 @@ type State struct {
 func NewClient(host, port *string) (*Client, error) {
 	c := &Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		Host:       "teigicritical-woger-direct.cern.ch", // default
-		Port:       8201,                                 // default
+		Host:       "",
+		Port:       8080,
 	}
 
 	if host != nil && *host != "" {

@@ -23,7 +23,7 @@ terraform {
 }
 
 provider "roger" {
-  host = "teigicritical-woger-direct.cern.ch"
+  host = "<YOUR-ROGER-SERVER>"
   port = 8201
 }
 ```
