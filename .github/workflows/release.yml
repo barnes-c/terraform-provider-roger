@@ -39,6 +39,11 @@ jobs:
           gpg --fingerprint
         env:
           GNUPGHOME: /home/runner/.gnupg
+      - name: Trust GPG key
+        run: |
+          echo -e "$(gpg --list-keys --with-colons | awk -F: '/^fpr:/ { print $10 }'):\n5:\n" | gpg --import-ownertrust
+        env:
+          GNUPGHOME: /home/runner/.gnupg
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6.3.0
         with:
