@@ -15,8 +15,6 @@ provider "roger" {
 }
 ```
 
-By default the provider sets the `ROGER_HOST` to `teigicritical-woger-direct.cern.ch` and the `ROGER_PORT` to `8201`.
-
 To be able to use the Provider valid Kerberos tickets must also be present
 
 ## Requirements
