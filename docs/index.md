@@ -16,8 +16,8 @@ Interact with roger.
 terraform {
   required_providers {
     roger = {
-      source  = "gitlab.cern.ch/ai-config-team/roger"
-      version = "0.1.0"
+      source  = "barnes-c/roger"
+      version = "1.0.14"
     }
   }
 }
