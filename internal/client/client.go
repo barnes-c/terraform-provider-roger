@@ -87,9 +87,6 @@ func (c *Client) GetState(hostname string) (*State, error) {
 		return nil, fmt.Errorf("failed to execute curl: %w", err)
 	}
 
-	// TODO Remove in final version
-	fmt.Printf("curl output: %s\n", output)
-
 	var state State
 	if err := json.Unmarshal(output, &state); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
