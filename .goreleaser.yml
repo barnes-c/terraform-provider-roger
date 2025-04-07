@@ -1,9 +1,4 @@
-# Visit https://goreleaser.com for documentation on how to customize this
-# behavior.
-version: 2
-before:
-  hooks:
-    - go mod tidy
+# Visit https://goreleaser.com for documentation on how to customize this behavior.
 builds:
   - env:
       - CGO_ENABLED=0
@@ -49,5 +44,3 @@ release:
   extra_files:
     - glob: "terraform-registry-manifest.json"
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
-changelog:
-  disable: true
