@@ -12,7 +12,10 @@ To use the provider you just have to declare a provider block:
 
 ```terraform
 provider "roger" {
+  host = "<YOUR-ROGER-SERVER>"
+  port = 8201
 }
+
 ```
 
 To be able to use the Provider valid Kerberos tickets must also be present
