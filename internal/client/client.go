@@ -82,6 +82,7 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 		"-H", "Content-Type: application/json",
 		"-H", "Accept: application/json",
 		"-d", payload,
+		"-w", "%{http_code}", // append http code to output
 		url,
 	)
 
@@ -90,9 +91,16 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 		return nil, fmt.Errorf("curl POST failed: %v\nOutput: %s", err, out)
 	}
 
+	statusCodeStr := string(out[len(out)-3:])
+	body := out[:len(out)-3]
+
+	if statusCodeStr == "201" {
+		return c.GetState(hostname)
+	}
+
 	var state State
-	if err := json.Unmarshal(out, &state); err != nil {
-		return nil, fmt.Errorf("failed to parse POST response: %w\nRaw: %s", err, out)
+	if err := json.Unmarshal(body, &state); err != nil {
+		return nil, fmt.Errorf("failed to parse POST response: %w\nRaw: %s", err, body)
 	}
 
 	return &state, nil
