@@ -91,11 +91,11 @@ func (r *stateResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	plan.AppState = types.StringValue(state.AppState)
+	plan.ID = types.StringValue(state.Hostname)
 	plan.Hostname = types.StringValue(state.Hostname)
-	plan.ID = types.StringValue(plan.Hostname.ValueString())
-	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	plan.AppState = types.StringValue(state.AppState)
 	plan.Message = types.StringValue(state.Message)
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -112,7 +112,7 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	state, err := r.client.GetState(readState.ID.ValueString())
+	state, err := r.client.GetState(readState.Hostname.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading roger state",
@@ -121,7 +121,11 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	readState.ID = types.StringValue(state.Hostname)
 	readState.Hostname = types.StringValue(state.Hostname)
+	readState.AppState = types.StringValue(state.AppState)
+	readState.Message = types.StringValue(state.Message)
+	readState.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	diags = resp.State.Set(ctx, &readState)
 	resp.Diagnostics.Append(diags...)
