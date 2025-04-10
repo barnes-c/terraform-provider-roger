@@ -71,19 +71,28 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s", fqdn, c.Port, hostname)
-	cmd := exec.Command("curl", "-s", "--negotiate", "-u", ":", "-X", "POST",
-		"-H", "Content-Type: application/json", url,
+	url := fmt.Sprintf("https://%s:%d/roger/v1/state/", fqdn, c.Port)
+
+	payload := fmt.Sprintf(`{"hostname": "%s", "message": "%s", "appstate": "%s"}`,
+		hostname, message, appstate)
+
+	cmd := exec.Command("curl", "-s",
+		"--negotiate", "-u", ":",
+		"-X", "POST",
+		"-H", "Content-Type: application/json",
+		"-H", "Accept: application/json",
+		"-d", payload,
+		url,
 	)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("curl failed: %v\nOutput: %s", err, out)
+		return nil, fmt.Errorf("curl POST failed: %v\nOutput: %s", err, out)
 	}
 
 	var state State
 	if err := json.Unmarshal(out, &state); err != nil {
-		return nil, fmt.Errorf("failed to parse state response: %w\nRaw: %s", err, out)
+		return nil, fmt.Errorf("failed to parse POST response: %w\nRaw: %s", err, out)
 	}
 
 	return &state, nil
