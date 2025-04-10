@@ -130,7 +130,7 @@ func (p *rogerProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 	tflog.Debug(ctx, "Creating roger client")
 
-	client, err := roger.NewClient(&host, &port)
+	client, err := roger.NewClient(host, port)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create roger API Client",
