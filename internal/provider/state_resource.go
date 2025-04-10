@@ -124,8 +124,12 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	readState.ID = types.StringValue(state.Hostname)
 	readState.Hostname = types.StringValue(state.Hostname)
 	readState.AppState = types.StringValue(state.AppState)
-	readState.Message = types.StringValue(state.Message)
-	readState.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	if state.Message != "" {
+		readState.Message = types.StringValue(state.Message)
+	} else {
+		readState.Message = types.StringNull()
+	}
+	readState.LastUpdated = readState.LastUpdated
 
 	diags = resp.State.Set(ctx, &readState)
 	resp.Diagnostics.Append(diags...)
@@ -160,9 +164,15 @@ func (r *stateResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	plan.ID = types.StringValue(statePtr.Hostname)
 	plan.Hostname = types.StringValue(statePtr.Hostname)
-	plan.Message = types.StringValue(statePtr.Message)
 	plan.AppState = types.StringValue(statePtr.AppState)
+	
+	if statePtr.Message != "" {
+		plan.Message = types.StringValue(statePtr.Message)
+	} else {
+		plan.Message = types.StringNull()
+	}
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	diags = resp.State.Set(ctx, plan)
