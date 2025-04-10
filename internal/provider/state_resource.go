@@ -82,7 +82,7 @@ func (r *stateResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	state, err := r.client.CreateState(plan.Hostname.String(), plan.Message.String(), plan.AppState.String())
+	state, err := r.client.CreateState(plan.Hostname.ValueString(), plan.Message.ValueString(), plan.AppState.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating state",
@@ -137,7 +137,7 @@ func (r *stateResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	_, err := r.client.UpdateState(plan.Hostname.String(), plan.Message.String(), plan.AppState.String())
+	_, err := r.client.UpdateState(plan.Hostname.ValueString(), plan.Message.ValueString(), plan.AppState.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Updating roger state",
@@ -146,11 +146,11 @@ func (r *stateResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	statePtr, err := r.client.GetState(plan.ID.ValueString())
+	statePtr, err := r.client.GetState(plan.Hostname.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading roger state",
-			"Could not read roger state ID "+plan.ID.ValueString()+": "+err.Error(),
+			"Could not read roger state Hostname "+plan.Hostname.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -175,7 +175,7 @@ func (r *stateResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	err := r.client.DeleteState(state.Hostname.String())
+	err := r.client.DeleteState(state.Hostname.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting roger state",
