@@ -91,10 +91,11 @@ func (r *stateResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	plan.Hostname = types.StringValue(state.Hostname)
-	plan.Message = types.StringValue(state.Message)
 	plan.AppState = types.StringValue(state.AppState)
+	plan.Hostname = types.StringValue(state.Hostname)
+	plan.ID = types.StringValue(plan.Hostname.ValueString())
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	plan.Message = types.StringValue(state.Message)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
