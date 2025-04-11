@@ -152,8 +152,7 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	} else {
 		readState.Message = types.StringNull()
 	}
-	readState.LastUpdated = readState.LastUpdated
-
+	
 	diags = resp.State.Set(ctx, &readState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
