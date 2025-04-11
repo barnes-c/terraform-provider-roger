@@ -94,7 +94,13 @@ func (r *stateResource) Create(ctx context.Context, req resource.CreateRequest, 
 	plan.ID = types.StringValue(state.Hostname)
 	plan.Hostname = types.StringValue(state.Hostname)
 	plan.AppState = types.StringValue(state.AppState)
-	plan.Message = types.StringValue(state.Message)
+	
+	if state.Message != "" {
+		plan.Message = types.StringValue(state.Message)
+	} else {
+		plan.Message = types.StringNull()
+	}
+	
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
 	diags = resp.State.Set(ctx, plan)
@@ -124,11 +130,19 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if state.Hostname == "" {
 		resp.Diagnostics.AddError(
 			"Roger API returned empty hostname",
-			"The roger API returned an empty hostname for state "+readState.ID.ValueString(),
+			"API returned an empty hostname after CreateState(). This should not happen.",
 		)
 		return
 	}
 	
+	if state.AppState == "" {
+		resp.Diagnostics.AddError(
+			"Roger API returned empty appstate",
+			"API returned an empty appstate after CreateState(). This should not happen.",
+		)
+		return
+	}
+
 	validStates := []string{"production", "draining", "quiesce"}
 	isValid := false
 	for _, v := range validStates {
