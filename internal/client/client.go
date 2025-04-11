@@ -46,7 +46,7 @@ type State struct {
 func loadKrb5Config() (*config.Config, error) {
 	path := os.Getenv("KRB5_CONFIG")
 	if path == "" {
-		path = "/etc/krb5.conf" // fallback
+		path = "/etc/krb5.conf" // Default path for krb5.conf
 	}
 	return config.Load(path)
 }
@@ -56,7 +56,7 @@ func loadCCache() (*credentials.CCache, error) {
 	if ccachePath == "" {
 		return nil, fmt.Errorf("KRB5CCNAME environment variable not set")
 	}
-	
+
 	ccachePath = strings.TrimPrefix(ccachePath, "FILE:")
 	return credentials.LoadCCache(ccachePath)
 }
@@ -123,7 +123,11 @@ func (c *Client) doRequest(method, url string, payload []byte) ([]byte, int, err
 	if err != nil {
 		return nil, 0, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			fmt.Printf("warning: failed to close response body: %v\n", cerr)
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
