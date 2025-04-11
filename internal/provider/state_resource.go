@@ -127,22 +127,6 @@ func (r *stateResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	if state.Hostname == "" {
-		resp.Diagnostics.AddError(
-			"Roger API returned empty hostname",
-			"API returned an empty hostname after CreateState(). This should not happen.",
-		)
-		return
-	}
-	
-	if state.AppState == "" {
-		resp.Diagnostics.AddError(
-			"Roger API returned empty appstate",
-			"API returned an empty appstate after CreateState(). This should not happen.",
-		)
-		return
-	}
-
 	validStates := []string{"production", "draining", "quiesce"}
 	isValid := false
 	for _, v := range validStates {

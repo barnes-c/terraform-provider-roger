@@ -112,7 +112,7 @@ func (c *Client) GetState(hostname string) (*State, error) {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s", fqdn, c.Port, hostname)
+	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
 	cmd := exec.Command("curl", "-s", "--negotiate", "-u", ":", "-X", "GET", url)
 
 	output, err := cmd.Output()
@@ -137,7 +137,7 @@ func (c *Client) DeleteState(hostname string) error {
 		return err
 	}
 
-	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s", fqdn, c.Port, hostname)
+	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
 	cmd := exec.Command("curl", "-s", "--negotiate", "-u", ":", "-X", "DELETE",
 		"-w", "%{http_code}", "-o", "/dev/stdout", url)
 	output, err := cmd.CombinedOutput()
@@ -153,7 +153,7 @@ func (c *Client) UpdateState(hostname, message, appstate string) (*State, error)
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s", fqdn, c.Port, hostname)
+	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
 
 	payload := fmt.Sprintf(`{"hostname": "%s", "message": "%s", "appstate": "%s"}`,
 		hostname, message, appstate)
