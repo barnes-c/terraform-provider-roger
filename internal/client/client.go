@@ -20,19 +20,19 @@ type Client struct {
 }
 
 type State struct {
-	AppAlarmed      string `json:"app_alarmed"`
+	AppAlarmed      bool   `json:"app_alarmed"`
 	AppState        string `json:"appstate"`
 	Expires         string `json:"expires"`
 	ExpiresDT       string `json:"expires_dt"`
 	Hostname        string `json:"hostname"`
-	HWAlarmed       string `json:"hw_alarmed"`
+	HWAlarmed       bool   `json:"hw_alarmed"`
 	Message         string `json:"message"`
-	NCAlarmed       string `json:"nc_alarmed"`
-	OSAlarmed       string `json:"os_alarmed"`
+	NCAlarmed       bool   `json:"nc_alarmed"`
+	OSAlarmed       bool   `json:"os_alarmed"`
 	UpdatedTime     string `json:"update_time"`
 	UpdatedTimeDT   string `json:"update_time_dt"`
 	UpdatedBy       string `json:"updated_by"`
-	UpdatedByPuppet string `json:"updated_by_puppet"`
+	UpdatedByPuppet bool   `json:"updated_by_puppet"`
 }
 
 func NewClient(host, port string) (*Client, error) {
