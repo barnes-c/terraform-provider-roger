@@ -4,17 +4,24 @@
 package roger
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
-	"os/exec"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/jcmturner/gokrb5/v8/client"
+	"github.com/jcmturner/gokrb5/v8/config"
+	"github.com/jcmturner/gokrb5/v8/credentials"
+	"github.com/jcmturner/gokrb5/v8/spnego"
 )
 
 type Client struct {
-	HTTPClient *http.Client
+	HTTPClient *spnego.Client
 	Host       string
 	Port       int
 }
@@ -35,13 +42,49 @@ type State struct {
 	UpdatedByPuppet bool   `json:"updated_by_puppet"`
 }
 
+
+func loadKrb5Config() (*config.Config, error) {
+	path := os.Getenv("KRB5_CONFIG")
+	if path == "" {
+		path = "/etc/krb5.conf" // fallback
+	}
+	return config.Load(path)
+}
+
+func loadCCache() (*credentials.CCache, error) {
+	ccachePath := os.Getenv("KRB5CCNAME")
+	if ccachePath == "" {
+		return nil, fmt.Errorf("KRB5CCNAME environment variable not set")
+	}
+	
+	ccachePath = strings.TrimPrefix(ccachePath, "FILE:")
+	return credentials.LoadCCache(ccachePath)
+}
+
 func NewClient(host, port string) (*Client, error) {
 	p, err := strconv.Atoi(port)
 	if err != nil || p <= 0 || p > 65535 {
 		return nil, fmt.Errorf("invalid port: %q", port)
 	}
 
-	return &Client{Host: host, Port: p}, nil
+	krbConf, err := loadKrb5Config()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load krb5.conf: %w", err)
+	}
+	
+	ccache, err := loadCCache()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load credential cache: %w", err)
+	}
+	
+	krbClient, err := client.NewFromCCache(ccache, krbConf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kerberos client: %w", err)
+	}
+
+	httpClient := spnego.NewClient(krbClient, nil, "")
+
+	return &Client{Host: host, Port: p, HTTPClient: httpClient}, nil
 }
 
 func (c *Client) resolveFQDN() (string, error) {
@@ -65,6 +108,31 @@ func (c *Client) resolveFQDN() (string, error) {
 	return "", fmt.Errorf("no valid IPv4 PTR record found for host %s", c.Host)
 }
 
+func (c *Client) doRequest(method, url string, payload []byte) ([]byte, int, error) {
+	req, err := http.NewRequest(method, url, bytes.NewReader(payload))
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, 0, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return body, resp.StatusCode, nil
+}
+
 func (c *Client) CreateState(hostname, message, appstate string) (*State, error) {
 	fqdn, err := c.resolveFQDN()
 	if err != nil {
@@ -72,35 +140,24 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 	}
 
 	url := fmt.Sprintf("https://%s:%d/roger/v1/state/", fqdn, c.Port)
+	payload, _ := json.Marshal(map[string]string{
+		"hostname": hostname,
+		"message":  message,
+		"appstate": appstate,
+	})
 
-	payload := fmt.Sprintf(`{"hostname": "%s", "message": "%s", "appstate": "%s"}`,
-		hostname, message, appstate)
-
-	cmd := exec.Command("curl", "-s",
-		"--negotiate", "-u", ":",
-		"-X", "POST",
-		"-H", "Content-Type: application/json",
-		"-H", "Accept: application/json",
-		"-d", payload,
-		"-w", "%{http_code}", // append http code to output
-		url,
-	)
-
-	out, err := cmd.CombinedOutput()
+	body, status, err := c.doRequest(http.MethodPost, url, payload)
 	if err != nil {
-		return nil, fmt.Errorf("curl POST failed: %v\nOutput: %s", err, out)
+		return nil, err
 	}
 
-	statusCodeStr := string(out[len(out)-3:])
-	body := out[:len(out)-3]
-
-	if statusCodeStr == "201" {
+	if status == http.StatusCreated {
 		return c.GetState(hostname)
 	}
 
 	var state State
 	if err := json.Unmarshal(body, &state); err != nil {
-		return nil, fmt.Errorf("failed to parse POST response: %w\nRaw: %s", err, body)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &state, nil
@@ -111,21 +168,42 @@ func (c *Client) GetState(hostname string) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
-	cmd := exec.Command("curl", "-s", "--negotiate", "-u", ":", "-X", "GET", url)
 
-	output, err := cmd.Output()
+	body, _, err := c.doRequest(http.MethodGet, url, nil)
 	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return nil, fmt.Errorf("curl failed: %s", string(exitErr.Stderr))
-		}
-		return nil, fmt.Errorf("failed to execute curl: %w", err)
+		return nil, err
 	}
 
 	var state State
-	if err := json.Unmarshal(output, &state); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	if err := json.Unmarshal(body, &state); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return &state, nil
+}
+
+func (c *Client) UpdateState(hostname, message, appstate string) (*State, error) {
+	fqdn, err := c.resolveFQDN()
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
+	payload, _ := json.Marshal(map[string]string{
+		"hostname": hostname,
+		"message":  message,
+		"appstate": appstate,
+	})
+
+	body, _, err := c.doRequest(http.MethodPut, url, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	var state State
+	if err := json.Unmarshal(body, &state); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return &state, nil
@@ -138,44 +216,6 @@ func (c *Client) DeleteState(hostname string) error {
 	}
 
 	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
-	cmd := exec.Command("curl", "-s", "--negotiate", "-u", ":", "-X", "DELETE",
-		"-w", "%{http_code}", "-o", "/dev/stdout", url)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("curl failed: %w; output: %s", err, output)
-	}
+	_, _, err = c.doRequest(http.MethodDelete, url, nil)
 	return err
-}
-
-func (c *Client) UpdateState(hostname, message, appstate string) (*State, error) {
-	fqdn, err := c.resolveFQDN()
-	if err != nil {
-		return nil, err
-	}
-
-	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", fqdn, c.Port, hostname)
-
-	payload := fmt.Sprintf(`{"hostname": "%s", "message": "%s", "appstate": "%s"}`,
-		hostname, message, appstate)
-
-	cmd := exec.Command("curl", "-s",
-		"--negotiate", "-u", ":",
-		"-X", "PUT",
-		"-H", "Content-Type: application/json",
-		"-H", "Accept: application/json",
-		"-d", payload,
-		url,
-	)
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("curl PUT failed: %v\nOutput: %s", err, out)
-	}
-
-	var state State
-	if err := json.Unmarshal(out, &state); err != nil {
-		return nil, fmt.Errorf("failed to parse PUT response: %w\nRaw: %s", err, out)
-	}
-
-	return &state, nil
 }
