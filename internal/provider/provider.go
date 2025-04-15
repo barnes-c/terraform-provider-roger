@@ -4,8 +4,10 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 	roger "roger/internal/client"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -30,7 +32,7 @@ func New(version string) func() provider.Provider {
 
 type rogerProviderModel struct {
 	Host types.String `tfsdk:"host"`
-	Port types.String `tfsdk:"port"`
+	Port types.Number `tfsdk:"port"`
 }
 
 type rogerProvider struct {
@@ -91,14 +93,28 @@ func (p *rogerProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	}
 
 	host := os.Getenv("ROGER_HOST")
-	port := os.Getenv("ROGER_PORT")
+	portStr := os.Getenv("ROGER_PORT")
+	port := 0
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
 	}
 
 	if !config.Port.IsNull() {
-		port = config.Port.ValueString()
+		bf := config.Port.ValueBigFloat()
+		portInt64, _ := bf.Int64()
+		port = int(portInt64)
+	} else if portStr != "" {
+		parsed, err := strconv.Atoi(portStr)
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("port"),
+				"Invalid ROGER_PORT Environment Variable",
+				fmt.Sprintf("ROGER_PORT must be an integer, but got: %q", portStr),
+			)
+			return
+		}
+		port = parsed
 	}
 
 	if host == "" {
@@ -111,7 +127,7 @@ func (p *rogerProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		)
 	}
 
-	if port == "" {
+	if port == 0 {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("port"),
 			"Missing roger Port",
