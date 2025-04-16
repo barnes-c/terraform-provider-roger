@@ -1,6 +1,6 @@
 # Terraform Provider Roger
 
-This is a terraform provider for [roger](https://twiki.cern.ch/twiki/bin/view/Main/RogerClient). Roger is more less a functional replacement for the old quattor "sms" tool.
+This is a terraform provider for [roger](https://twiki.cern.ch/twiki/bin/view/Main/RogerClient). Roger is more or less a functional replacement for the old quattor "sms" tool.
 
 It manages two important pieces of machine state. Whether you want alarms switched on (or, more accurately, whether you want alarms to be masked), and what the current state of the machine is. Optionally you can then use those state transitions to take actions, such as to remove a machine from a load balancer.
 
