@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/jcmturner/gokrb5/v8 v8.4.4
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
