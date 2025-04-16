@@ -34,4 +34,4 @@ provider "roger" {
 ### Optional
 
 - `host` (String) URI for roger API. May also be provided via ROGER_HOST environment variable.
-- `port` (String) Port for roger API. May also be provided via ROGER_PORT environment variable.
+- `port` (Number) Port for roger API. May also be provided via ROGER_PORT environment variable.
