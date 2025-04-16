@@ -52,7 +52,7 @@ func (p *rogerProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 				Description: "URI for roger API. May also be provided via ROGER_HOST environment variable.",
 				Optional:    true,
 			},
-			"port": schema.StringAttribute{
+			"port": schema.NumberAttribute{
 				Description: "Port for roger API. May also be provided via ROGER_PORT environment variable.",
 				Optional:    true,
 			},
