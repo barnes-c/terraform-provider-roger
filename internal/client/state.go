@@ -38,7 +38,7 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 		return nil, err
 	}
 
-	if status == http.StatusCreated {
+	if status == http.StatusCreated || status == http.StatusNoContent || len(body) == 0 {
 		return c.GetState(hostname)
 	}
 
@@ -46,7 +46,6 @@ func (c *Client) CreateState(hostname, message, appstate string) (*State, error)
 	if err := json.Unmarshal(body, &state); err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
-
 	return &state, nil
 }
 
@@ -74,21 +73,32 @@ func (c *Client) UpdateState(hostname, message, appstate string) (*State, error)
 		"appstate": appstate,
 	})
 
-	body, _, err := c.doRequest(http.MethodPut, url, payload)
+	body, status, err := c.doRequest(http.MethodPut, url, payload)
 	if err != nil {
 		return nil, err
+	}
+
+	if status == http.StatusOK || status == http.StatusNoContent || len(body) == 0 {
+		return c.GetState(hostname)
 	}
 
 	var state State
 	if err := json.Unmarshal(body, &state); err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
-
 	return &state, nil
 }
 
 func (c *Client) DeleteState(hostname string) error {
 	url := fmt.Sprintf("https://%s:%d/roger/v1/state/%s/", c.Host, c.Port, hostname)
-	_, _, err := c.doRequest(http.MethodDelete, url, nil)
-	return err
+	body, status, err := c.doRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	if status != http.StatusNoContent && status != http.StatusOK {
+		return fmt.Errorf("failed to delete state: status=%d, body=%q", status, string(body))
+	}
+
+	return nil
 }
