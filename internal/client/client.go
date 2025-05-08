@@ -43,7 +43,7 @@ func loadCCache() (*credentials.CCache, error) {
 }
 
 func NewClient(host string, port int) (*Client, error) {
-	if  port <= 0 || port > 65535 {
+	if port <= 0 || port > 65535 {
 		return nil, fmt.Errorf("invalid port: %q", port)
 	}
 
@@ -122,6 +122,8 @@ func (c *Client) doRequest(method, url string, payload []byte) ([]byte, int, err
 	if err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
 	}
+
+	fmt.Printf("DEBUG: %s %s → %d %q\n", method, url, resp.StatusCode, string(body))
 
 	return body, resp.StatusCode, nil
 }
