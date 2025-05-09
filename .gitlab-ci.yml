@@ -1,16 +1,6 @@
 stages:
   - release
 
-job1:
-  stage: release
-  variables:
-    GIT_DEPTH: "0"
-    GPG_PRIVATE_KEY: $GPG_PRIVATE_KEY
-    GPG_PASSPHRASE: $GPG_PASSPHRASE
-    GITLAB_TOKEN: $GORELEASER_GITLAB_TOKEN
-  script:
-    - echo "Variables are '$GPG_PRIVATE_KEY', '$GORELEASER_GITLAB_TOKEN' and '$GPG_PASSPHRASE'"
-
 release:
   stage: release
   image:
@@ -32,6 +22,5 @@ release:
         gpg --list-secret-keys --with-colons \
         | awk -F: '/^sec/ {print $5}'
       )"
-    - export GITLAB_TOKEN="$GORELEASER_GITLAB_TOKEN"
   script:
     - goreleaser release --clean
