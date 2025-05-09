@@ -2,6 +2,7 @@ stages:
   - release
 
 job1:
+  stage: release
   variables:
     GIT_DEPTH: "0"
     GPG_PRIVATE_KEY: $GPG_PRIVATE_KEY
