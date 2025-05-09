@@ -21,5 +21,6 @@ release:
         gpg --list-secret-keys --with-colons \
         | awk -F: '/^sec/ {print $5}'
       )"
+    - export GITLAB_TOKEN="$GORELEASER_GITLAB_TOKEN"
   script:
     - goreleaser release --clean
