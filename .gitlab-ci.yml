@@ -4,7 +4,7 @@ stages:
 release:
   stage: release
   image:
-    name: goreleaser/goreleaser:latest
+    name: registry.cern.ch/docker.io/goreleaser/goreleaser:latest
     entrypoint: [""]
   only:
     - tags
