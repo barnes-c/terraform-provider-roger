@@ -22,4 +22,4 @@ release:
         | awk -F: '/^sec/ {print $5}'
       )"
   script:
-    - goreleaser release --rm-dist --debug
+    - goreleaser release --clean --debug
