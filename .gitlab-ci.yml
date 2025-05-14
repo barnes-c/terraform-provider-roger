@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 stages:
+  - formatting
   - release
 
 job1:
@@ -39,3 +40,11 @@ release:
     - export GITLAB_TOKEN="$GORELEASER_GITLAB_TOKEN"
   script:
     - goreleaser release --clean
+
+reuse:
+  image:
+    name: registry.cern.ch/docker.io/fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
+  stage: formatting
