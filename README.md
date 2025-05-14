@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 CERN
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Terraform Provider Roger
 
 This is a terraform provider for [roger](https://twiki.cern.ch/twiki/bin/view/Main/RogerClient). Roger is more or less a functional replacement for the old quattor "sms" tool.
