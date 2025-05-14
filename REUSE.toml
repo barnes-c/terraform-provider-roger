@@ -10,13 +10,14 @@ SPDX-PackageDownloadLocation = "https://gitlab.cern.ch/ai-config-team/terraform-
 
 [[annotations]]
 path = [
-    "go.sum",
-    "go.mod",
-    "examples/**",
     ".goreleaser.yml",
+    "examples/**",
+    "GNUmakefile"
+    "go.mod",
+    "go.sum",
     "terraform-registry-manifest.json",
+    "tools/go.mod",
     "tools/go.sum",
-    "tools/go.mod"
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "2025 CERN"
