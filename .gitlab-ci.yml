@@ -6,15 +6,13 @@ stages:
   - formatting
   - release
 
-job1:
-  stage: release
-  variables:
-    GIT_DEPTH: "0"
-    GPG_PRIVATE_KEY: $GPG_PRIVATE_KEY
-    GPG_PASSPHRASE: $GPG_PASSPHRASE
-    GITLAB_TOKEN: $GORELEASER_GITLAB_TOKEN
+reuse:
+  stage: formatting
+  image:
+    name: registry.cern.ch/docker.io/fsfe/reuse:latest
+    entrypoint: [""]
   script:
-    - echo "Variables are '$GPG_PRIVATE_KEY', '$GORELEASER_GITLAB_TOKEN' and '$GPG_PASSPHRASE'"
+    - reuse lint
 
 release:
   stage: release
@@ -40,11 +38,3 @@ release:
     - export GITLAB_TOKEN="$GORELEASER_GITLAB_TOKEN"
   script:
     - goreleaser release --clean
-
-reuse:
-  image:
-    name: registry.cern.ch/docker.io/fsfe/reuse:latest
-    entrypoint: [""]
-  script:
-    - reuse lint
-  stage: formatting
