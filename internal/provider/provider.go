@@ -6,7 +6,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"os"
 	roger "roger/internal/client"
 	"strconv"
@@ -95,8 +94,17 @@ func (p *rogerProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	}
 
 	host := os.Getenv("ROGER_HOST")
-	portStr := os.Getenv("ROGER_PORT")
-	port := 0
+	if host == "" {
+		host = "woger-direct.cern.ch"
+	}
+
+	port := 8201
+	if portStr := os.Getenv("ROGER_PORT"); portStr != "" {
+		if parsed, err := strconv.Atoi(portStr); err == nil {
+			port = parsed
+		}
+
+	}
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -106,17 +114,6 @@ func (p *rogerProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		bf := config.Port.ValueBigFloat()
 		portInt64, _ := bf.Int64()
 		port = int(portInt64)
-	} else if portStr != "" {
-		parsed, err := strconv.Atoi(portStr)
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("port"),
-				"Invalid ROGER_PORT Environment Variable",
-				fmt.Sprintf("ROGER_PORT must be an integer, but got: %q", portStr),
-			)
-			return
-		}
-		port = parsed
 	}
 
 	if host == "" {
