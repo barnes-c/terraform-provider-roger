@@ -19,10 +19,11 @@ To use the provider you just have to declare a provider block:
 ```terraform
 provider "roger" {
   host = "<YOUR-ROGER-SERVER>"
-  port = 8201
+  port = "<YOUR-ROGER-PORT>"
 }
-
 ```
+
+By default the host is `woger-direct.cern.ch` and the port set to `8201`.
 
 It is also possible to set these variables via environment variables. The provider expects them to be named `ROGER_HOST` and `ROGER_PORT`.
 
